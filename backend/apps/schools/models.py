@@ -101,6 +101,7 @@ class SchoolMembership(models.Model):
         PRINCIPAL = "principal", "Principal"
         ACCOUNTANT = "accountant", "Accountant"
         TEACHER = "teacher", "Teacher"
+        STAFF = "staff", "Staff"
         PARENT = "parent", "Parent"
         STUDENT = "student", "Student"
 

@@ -369,3 +369,70 @@ class SchoolClass(models.Model):
 
     def __str__(self):
         return self.full_name
+
+
+class Subject(models.Model):
+    """
+    A subject offered by a school.
+
+    Subjects can be assigned to multiple classes
+    and multiple teachers.
+    """
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+
+    school = models.ForeignKey(
+        School,
+        on_delete=models.CASCADE,
+        related_name="subjects",
+    )
+
+    name = models.CharField(max_length=100)
+
+    code = models.CharField(
+        max_length=30,
+        blank=True,
+        default="",
+    )
+
+    description = models.TextField(
+        blank=True,
+        default="",
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Subject"
+        verbose_name_plural = "Subjects"
+        ordering = ["name"]
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=["school", "name"],
+                name="unique_school_subject_name",
+            ),
+            models.UniqueConstraint(
+                fields=["school", "code"],
+                condition=~Q(code=""),
+                name="unique_school_subject_code",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["school", "is_active"],
+                name="subject_school_active_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.school.name}"

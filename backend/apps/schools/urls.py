@@ -43,4 +43,9 @@ urlpatterns = [
         "<uuid:school_id>/guardians/",
         include("apps.students.guardian_urls"),
     ),
+
+    path(
+        "<uuid:school_id>/staff/",
+        include("apps.staff.urls"),
+    ),
 ]

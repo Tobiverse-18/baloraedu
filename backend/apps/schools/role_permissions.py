@@ -84,6 +84,8 @@ ROLE_PERMISSIONS = {
         SchoolPermissions.TIMETABLES_VIEW,
     },
 
+    SchoolMembership.Role.STAFF: set(),
+
     SchoolMembership.Role.PARENT: {
         SchoolPermissions.STUDENTS_VIEW,
         SchoolPermissions.ATTENDANCE_VIEW,

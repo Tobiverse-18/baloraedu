@@ -5,9 +5,12 @@ from rest_framework.permissions import IsAuthenticated
 
 from apps.schools.models import School, SchoolMembership
 
-from apps.staff.models import StaffDepartment
+from apps.staff.models import StaffDepartment, StaffProfile
 from apps.staff.permissions import HasStaffPermission
-from apps.staff.serializers import StaffDepartmentSerializer
+from apps.staff.serializers import (
+    StaffDepartmentSerializer,
+    StaffProfileSerializer,
+)
 
 
 class StaffSchoolQuerysetMixin:
@@ -41,6 +44,15 @@ class StaffSchoolQuerysetMixin:
             school=self.get_school(),
         ).select_related(
             "school",
+        )
+
+    def get_staff_profile_queryset(self):
+        return StaffProfile.objects.filter(
+            school=self.get_school(),
+        ).select_related(
+            "school",
+            "department",
+            "user",
         )
 
 
@@ -101,6 +113,70 @@ class StaffDepartmentDetailView(
         self.get_membership()
 
         return self.get_department_queryset()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["school"] = self.get_school()
+        return context
+
+
+class StaffProfileListCreateView(
+    StaffSchoolQuerysetMixin,
+    generics.ListCreateAPIView,
+):
+    """
+    GET: List staff profiles belonging to the requested school.
+    POST: Create a staff profile in the requested school.
+    """
+
+    permission_classes = [
+        IsAuthenticated,
+        HasStaffPermission,
+    ]
+
+    serializer_class = StaffProfileSerializer
+
+    def get_queryset(self):
+        self.get_membership()
+
+        return self.get_staff_profile_queryset()
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["school"] = self.get_school()
+        return context
+
+    def perform_create(self, serializer):
+        serializer.save(
+            school=self.get_school(),
+        )
+
+
+class StaffProfileDetailView(
+    StaffSchoolQuerysetMixin,
+    generics.RetrieveUpdateAPIView,
+):
+    """
+    GET: Retrieve a staff profile within the requested school.
+    PUT/PATCH: Update a staff profile.
+
+    DELETE is intentionally not implemented.
+    """
+
+    permission_classes = [
+        IsAuthenticated,
+        HasStaffPermission,
+    ]
+
+    serializer_class = StaffProfileSerializer
+
+    lookup_field = "id"
+    lookup_url_kwarg = "staff_id"
+
+    def get_queryset(self):
+        self.get_membership()
+
+        return self.get_staff_profile_queryset()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
